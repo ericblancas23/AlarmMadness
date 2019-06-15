@@ -1,0 +1,392 @@
+<app-background>
+</app-background>
+<section *ngIf='cameraOn'>
+
+<div class="camera">
+  <div class="cameraTopPadding"></div>
+  <app-camera class="webcamComp"></app-camera>
+</div>
+
+</section>
+
+<!-- *** Sign Up View ***-->
+<section *ngIf='!loggedIn && toSignInBoolean' class="signUp">
+  <div class="intro" *ngIf='!launched'>
+    <h1 color="primary">How do you feel?</h1>
+    <h2>Let me guess..Make a face expression.</h2>
+    <button md-raised-button color="primary" class="buttonToCamera" (click) = "readyClick()">I Am Ready!</button>
+  </div>
+
+
+  <md-spinner *ngIf="launched && progress"></md-spinner>
+
+  <form (ngSubmit)="signUp()" *ngIf="proceedToSignUpBoolean">
+
+    <md-input-container class="input-width">
+      <input mdInput type="text" placeholder="Name" [formControl]="nameFormControl"
+       [(ngModel)]="nameInput" name="nameInput" >
+      <md-error *ngIf="nameFormControl.hasError('pattern')">
+        Please enter a valid name - no special characters or number
+      </md-error>
+      <md-error *ngIf="nameFormControl.hasError('required')">
+        Name is <strong>required</strong>
+      </md-error>
+      <md-error *ngIf="nameFormControl.hasError('minlength') || nameFormControl.hasError('maxlength')">
+        Name must be 3-20 characters
+      </md-error>
+    </md-input-container>
+
+    <md-input-container class="input-width">
+      <input mdInput type="password" placeholder="Password" [formControl]="passwordFormControl"
+       [(ngModel)]="passwordInput" name="passwordInput">
+      <md-error *ngIf="passwordFormControl.hasError('required')">
+        Password is <strong>required</strong>
+      </md-error>
+      <md-error *ngIf="passwordFormControl.hasError('minlength')">
+        Password must be at least 4 characters long
+      </md-error>
+      <md-error *ngIf="passwordFormControl.hasError('maxlength')">
+        Password can't be longer than 20 characters
+      </md-error>
+    </md-input-container>
+
+    <button md-raised-button class= "signUpBtn"
+    [disabled]="nameFormControl.errors || passwordFormControl.errors">
+      <span
+      [mdTooltip]="(nameFormControl.errors || passwordFormControl.errors) ?
+      'Complete the form to Sign Up!' : null">
+        Sign Up
+      </span>
+    </button>
+
+  </form>
+
+
+  <a md-button class="routeToLoginBtn" *ngIf="!launched" (click) = "signAndLogToggle()">To Log In..</a>
+
+</section>
+
+
+<!-- *** LogIn View *** -->
+<section *ngIf="!loggedIn && !toSignInBoolean" class="login">
+
+  <form (ngSubmit)="logIn()">
+
+    <md-input-container class="input-width">
+      <input mdInput type="text" placeholder="Name" [formControl]="nameFormControl"
+       [(ngModel)]="nameInput" name="nameInput" >
+      <md-error *ngIf="nameFormControl.hasError('pattern')">
+        Please enter a valid name - no special characters or number
+      </md-error>
+      <md-error *ngIf="nameFormControl.hasError('required')">
+        Name is <strong>required</strong>
+      </md-error>
+      <md-error *ngIf="nameFormControl.hasError('minlength') || nameFormControl.hasError('maxlength')">
+        Name must be 3-20 characters
+      </md-error>
+    </md-input-container>
+
+    <md-input-container class="input-width">
+      <input mdInput type="password" placeholder="Password" [formControl]="passwordFormControl"
+       [(ngModel)]="passwordInput" name="passwordInput">
+      <md-error *ngIf="passwordFormControl.hasError('required')">
+        Password is <strong>required</strong>
+      </md-error>
+      <md-error *ngIf="passwordFormControl.hasError('minlength')">
+        Password must be at least 4 characters long
+      </md-error>
+      <md-error *ngIf="passwordFormControl.hasError('maxlength')">
+        Password can't be longer than 20 characters
+      </md-error>
+    </md-input-container>
+
+    <button md-raised-button class= "logInBtn"
+    [disabled]="nameFormControl.errors || passwordFormControl.errors">
+      <span
+      [mdTooltip]="(nameFormControl.errors || passwordFormControl.errors) ?
+      'Complete the form to Log In!' : null">
+        Log In
+      </span>
+    </button>
+
+  </form>
+
+  <a md-button class="routeToSignUpBtn" (click)="signAndLogToggle()">To Sign Up..</a>
+
+</section>
+
+
+
+<section *ngIf="loggedIn" class="alarmView">
+
+  <md-sidenav-container class="side-container" *ngIf="!ringingViewBoolean">
+    <md-sidenav #sidenav class="sidenav">
+      <button md-button (click)="viewAlarm()">&nbsp;
+        <i class="material-icons">alarm</i>
+        <span>Alarm</span>
+      </button>
+      <button md-button (click)="viewFeed()">&nbsp;
+        <i class="material-icons">face</i>
+        Feed
+      </button>
+      <button md-button (click)="logOut()">
+        <i class="material-icons">subdirectory_arrow_left</i>&nbsp;
+        Log Out
+      </button>
+      <button md-button class="deokjae" (click)="viewDeokjae()">&nbsp;
+        <img src="https://scontent-mia3-2.xx.fbcdn.net/v/t31.0-8/19800803_1396473863771304_8298855756804221619_o.jpg?oh=ab7028179bd8365259ea67e3475b1086&oe=5A1F7D86">
+        Who Dev?
+      </button>
+
+    </md-sidenav>
+
+    <div class="sideBar">
+      <button type="button" md-button (click)="sidenavOpen()">
+        <i class="material-icons">menu</i>
+      </button>
+    </div>
+
+  </md-sidenav-container>
+
+  <div class="currentClock">
+
+    {{ now | date:"hh"}}<span>:</span>{{ now | date:"mm"}}<span>:</span>{{ now | date:"ss"}}<span class="smaller"> {{ now | date:'a'}}</span>
+
+  </div>
+
+  <div class="alarmList" *ngIf="!ringingViewBoolean && alarmTimeToDisplay[0]">
+
+    <md-chip-list class="mat-chip-list-stacked">
+      <md-chip *ngFor="let alarm of alarmTimeToDisplay ; let i = index" [ngClass]="{'soonAlarm': 0 == i}">
+        <span>
+          <!-- {{alarm.timeSet.slice(16,27)}} -->
+          {{humanize(alarm.timeSet)}}
+        </span>
+        <i class="material-icons" (click)="deleteAlarm(i)">close</i>
+      </md-chip>
+    </md-chip-list>
+
+  </div>
+
+  <form class="alarmInterface" (ngSubmit)="createAlarm()" *ngIf="toAlarmBoolean && !ringingViewBoolean">
+    <md-grid-list cols="2" rowHeight="3:1" style="padding-top: 40px; border-radius:10px 10px 0 0">
+
+      <md-grid-tile>
+        <span mdTooltip="Alarm" mdTooltipPosition="above">
+          <label for="alarmCheck" (click)="isAlarmCheckedToggle()">
+              <i class="material-icons alarmIcon pinkIt">alarm</i>
+          </label>
+        </span>
+      </md-grid-tile>
+      <md-grid-tile>
+        <span mdTooltip="Timer" mdTooltipPosition="above">
+          <label for="timerCheck" (click)="isAlarmCheckedToggle()">
+              <i class="material-icons timerIcon">timer</i>
+          </label>
+        </span>
+      </md-grid-tile>
+
+    </md-grid-list>
+    <md-grid-list cols="2" rowHeight="5:1">
+      <md-grid-tile>
+         <md-slide-toggle input id ="alarmCheck" [checked]="isAlarmChecked"
+          (click)="isAlarmCheckedToggle()" disabled></md-slide-toggle>
+      </md-grid-tile>
+      <md-grid-tile>
+         <md-slide-toggle input id ="timerCheck" [checked]="!isAlarmChecked"
+          (click)="isAlarmCheckedToggle()" disabled></md-slide-toggle>
+      </md-grid-tile>
+    </md-grid-list>
+
+    <md-grid-list cols="10" rowHeight="0.5:1" class="timeSetting">
+      <md-grid-tile [colspan]="1"></md-grid-tile>
+      <md-grid-tile [colspan]="8">
+        <md-input-container>
+          <input mdInput [formControl]="hoursFormControl"
+           [(ngModel)]="hoursInput" name="hoursInput" >
+        </md-input-container><span>:</span>
+        <md-input-container>
+          <input mdInput [formControl]="minsFormControl"
+           [(ngModel)]="minsInput" name="minsInput">
+        </md-input-container><span>:</span>
+        <md-input-container>
+          <input mdInput [formControl]="secsFormControl"
+           [(ngModel)]="secsInput" name="secsInput">
+        </md-input-container>
+        <label class="amBtn shiftALittle" (click)="amPmToggle()" *ngIf="isAlarmChecked">AM</label>
+      </md-grid-tile>
+      <md-grid-tile [colspan]="1"></md-grid-tile>
+    </md-grid-list>
+
+    <md-grid-list cols="1" rowHeight="9:1">
+      <md-grid-tile>
+
+        <md-select placeholder="Sound" [(ngModel)]="selectedAudio"
+        (ngModelChange)="audioSelect($event)" name="selectedAudio">
+          <md-option *ngFor="let sound of sounds; let i = index"
+          [value]="sound.value" (click)="i === 2 ? openSearchDialog() : undefined">
+            {{ sound.viewValue }}
+          </md-option>
+        </md-select>
+
+        <div class="ytNameDisplay"
+        *ngIf="title !== 'Morning' &&
+               title !== 'Nyan Cat' ">
+         <span>{{title.length >16 ? title.slice(0,16) + '...' : title}}</span>
+        </div>
+
+      </md-grid-tile>
+    </md-grid-list>
+
+    <md-grid-list cols="1" rowHeight="4:1" style="border-radius:0 0 10px 10px">
+      <md-grid-tile>
+        <button md-raised-button
+        [disabled]="hoursFormControl.errors || minsFormControl.errors ||
+        secsFormControl.errors || !selectedAudio || selectedAudio === '-'">
+          <span
+          [mdTooltip]="(hoursFormControl.errors || minsFormControl.errors ||
+          secsFormControl.errors || !selectedAudio) ?
+          'Complete the alarm form!' : null">
+            SET
+          </span>
+        </button>
+      </md-grid-tile>
+    </md-grid-list>
+
+  </form>
+
+  <div class="ring-container" *ngIf="ringingViewBoolean && !unlocking && !dice" (click)="showDice()">
+    <md-chip-list>
+      <md-chip class="msgChip" (click)="logOut()">Click to Unlock</md-chip>
+    </md-chip-list>
+   <div class="ring-icon">
+    <svg class="ringingAlarm" fill="#000000" height="96" width="96" viewbox="0 0 96 96">
+      <circle id="clockface" cx="48" cy="48" stroke="black" r="30" stroke-width="8" fill="none"/>
+      <circle id="clockcentre" cx="48" cy="48" fill="black" r="4" />
+      <rect id="bell1" x="10" y="10" width="26" height="8" style="-ms-transform: rotate(-40deg); transform: rotate(-40deg); transform-origin: center;"/>
+      <rect id="bell2" x="60" y="10" width="26" height="8" style="-ms-transform: rotate(40deg); transform: rotate(40deg); transform-origin: center"/>
+      <line id="hour" x1="48" y1="50" x2="48" y2="28" style="stroke-width:4px; stroke: black; fill:none;"/>
+      <line id="minute" x1="46" y1="50" x2="64" y2="60" style="stroke-width:4px; stroke: black; fill:none;"/>
+    </svg>
+   </div>
+  </div>
+
+  <div class="ytOverlap">
+  <youtube-player
+      [videoId]="ytId"
+      (ready)="savePlayer($event)"
+      (change)="onStateChange($event)"
+      width='480' height='270' *ngIf="showYtVideo"></youtube-player>
+  </div>
+
+  <dice *ngIf="dice"></dice>
+
+  <!-- <md-spinner *ngIf="launched && progress"></md-spinner> -->
+
+  <md-spinner *ngIf="unlocking && progress "></md-spinner>
+
+  <div class="feed" *ngIf="toFeedBoolean && !ringingViewBoolean">
+    <!-- <md-card>
+      <img md-card-image [src]="currentUser.photoUrl">
+      <md-card-header>
+        <div md-card-avatar class="example-header-image" [ngStyle]="{'background-image': 'url(' + currentUser.photoUrl + ')'}"></div>
+        <md-card-title>{{currentUser.name}}</md-card-title>
+        <md-card-subtitle></md-card-subtitle>
+      </md-card-header>
+    </md-card> -->
+
+    <!-- let alarm of alarmTimeToDisplay ; let i = index -->
+    <md-card *ngFor="let post of posts ; let i = index">
+      <img md-card-image [src]="post.photoUrl">
+      <md-card-header>
+        <md-card-title>{{post.userName}} {{post.emoji}}</md-card-title>
+        <!-- post made when signed up -->
+        <md-card-subtitle *ngIf="!post.timeSet">Signed up at <strong>{{post.createdAt}}</strong></md-card-subtitle>
+        <!-- post made when unlocking -->
+        <md-card-subtitle *ngIf="post.timeSet">
+          Unlocked at <strong>{{post.createdAt}}</strong>
+          <br>
+          <span md-button (click) = 'playYtFromPost(i)'><i class="material-icons">music_note</i> {{post.soundSet.title}}</span>
+        </md-card-subtitle>
+      </md-card-header>
+      <md-card-content *ngIf="!post.timeSet">
+        <p>
+         {{post.userName}} just joined!
+        </p>
+      </md-card-content>
+      <md-card-content *ngIf="post.timeSet">
+        <p>
+          Alarm was set for <strong>{{post.timeSetHuman}}</strong>.
+          <br>
+          Duration :
+          <strong>
+            <span *ngIf="post.duration.h !== 0">{{post.duration.h}} hr </span>
+            <span *ngIf="post.duration.m !== 0">{{post.duration.m}} min </span>
+            {{post.duration.s}} sec</strong>
+          <br>
+          Time took to set off :
+          <strong>
+            <span *ngIf="post.timeTook.h !== 0">{{post.timeTook.h}} hr </span>
+            <span *ngIf="post.timeTook.m !== 0">{{post.timeTook.m}} min </span>
+            {{post.timeTook.s}} sec</strong>
+        </p>
+      </md-card-content>
+      <md-card-content>
+        <div class="commentSection" *ngFor='let comment of post.comments ; let j = index'>
+          <div md-card-avatar class="example-header-image commentUserPhoto" [ngStyle]="{'background-image': 'url(' + comment.photoUrl + ')'}"></div>
+          <div class="commentContents">
+            <span><strong>{{comment.userName}}</strong> {{comment.comment}}</span>
+            <span class="commentInterface">
+              {{humanizeDate(comment.createdAt)}}
+              <a md-button *ngIf="comment.userId === currentUser._id" (click)="deleteComment(i,j)"> DELETE</a>
+            </span>
+          </div>
+        </div>
+      </md-card-content>
+      <form class="commentInput" (ngSubmit)="addComment(i)" *ngIf="post.commentEnabled">
+        <md-input-container>
+          <input mdInput class="mdInput" focused placeholder="Comment"
+          (click)='commentUpdate($event)' (keyup)="commentUpdate($event)"
+          (click.enter)="cleanUpCommentInput($event)" (keyup.enter)="cleanUpCommentInput($event)">
+        </md-input-container>
+      </form>
+      <md-card-actions>
+        <button md-button (click)="commentBtn(i)"><i class="material-icons">comment</i> COMMENT</button>
+        <button md-button style="colore:red" *ngIf="post.timeSet" (click) = 'playYtFromPost(i)'>
+          <img style="height:30px;" src="../../assets/youtube.png">
+          YOUTUBE
+        </button>
+        <button md-button *ngIf="currentUser._id === post.userId" (click)="deletePostBtn(i,j)">
+          <i class="material-icons">delete</i> DELETE</button>
+      </md-card-actions>
+    </md-card>
+    <div style="padding: 15px 0"></div>
+  </div>
+
+  <div class="dev" *ngIf="toDevBoolean && !ringingViewBoolean">
+
+    <div class="devContent">
+      <div class="deokjaeImg"></div>
+    </div>
+    <h1>DEOKJAE</h1>
+    <div class="icons">
+      <a md-button href="https://github.com/Deokjj" target="_blank">
+        <div class='icon github'></div> </a>
+      <a md-button href="https://www.linkedin.com/in/deokj" target="_blank">
+        <div class='icon linkedin'></div> </a>
+      <a md-button class="gitrepo" href="https://github.com/Deokjj/AlarmMadness" target="_blank">
+        <div class="gitrepoIcon"></div>
+         Client.git
+      </a>
+      <a md-button class="gitrepo" href="https://github.com/Deokjj/AlarmMadnessApi" target="_blank">
+        <div class="gitrepoIcon"></div>
+         Server.git
+      </a>
+      <a md-button class="gitrepo" href="https://youtu.be/GhnBJbq0Enw" target="_blank">
+        <div class="demoVid"></div>
+         Demo
+      </a>
+    </div>
+  </div>
+
+</section>
